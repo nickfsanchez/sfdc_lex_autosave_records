@@ -1,0 +1,54 @@
+<<!--Component-->>
+({
+    doInit : function(component, event, helper) {
+
+        //Initiate Auto-saves.
+        helper.pollAutoSave(component, event, helper);
+    },
+})
+
+
+
+<<!--JS-->>
+({
+    pollAutoSave : function(component, event, helper) { 
+        
+        //execute callSaveMethod() again after 60 sec each
+        window.setInterval(
+            $A.getCallback(function() { 
+                helper.callSaveMethod(component, event, helper);
+            }), 60000
+        );      
+    },
+    
+    callSaveMethod : function (component, event, helper){   
+        if(helper.validateContactForm(component)) {
+            
+            // Prepare the action to create the new contact
+            var saveUpdateAction = component.get("c.saveUpdateRecord");
+            saveUpdateAction.setParams({
+                "theSaveRecord": component.get("v.theRecord")
+            });
+            
+            // Configure the response handler for the action
+            saveUpdateAction.setCallback(this, function(response) {
+                var state = response.getState();
+                if(state === "SUCCESS") {
+                    //Actions can be added here if desired.
+                }
+                else if (state === "ERROR") {
+                    console.log('Problem saving contact, response state: ' + state);
+                }
+                    else {
+                        console.log('Unknown problem, response state: ' + state);
+                    }
+            });
+            
+            // Send the request to do the update.
+            $A.enqueueAction(saveUpdateAction);
+            
+        } 
+        
+    },
+    
+})
